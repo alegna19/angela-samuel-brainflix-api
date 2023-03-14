@@ -7,10 +7,6 @@ app.use(express.json());
 app.use(express.static("public"));
 app.use("/videos", videosRoutes);
 
-// app.get("/", (req, res) => {
-//   res.send("Welcomeee!!");
-// });
-
 app.listen(port, () => {
   console.log("Listening on port 8081");
 });
