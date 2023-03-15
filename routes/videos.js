@@ -1,3 +1,4 @@
+const { response } = require("express");
 const express = require("express");
 const fs = require("fs");
 const { v4: uuid } = require("uuid");
@@ -28,13 +29,12 @@ router.get("/", (_req, res) => {
 
 //Get Videos By ID
 router.get("/:id", (req, res) => {
-  //const videos = JSON.parse(fs.readFileSync("./data/videos.json"));
   const founVideo = videos.find((video) => {
     return video.id === req.params.id;
   });
   if (!founVideo) {
     res.status(404).json({
-      message: "The video with id" + requestVideoID + "was not found",
+      message: "The video was not found",
     });
     return;
   }
@@ -43,14 +43,98 @@ router.get("/:id", (req, res) => {
 
 module.exports = router;
 
-//POST Videos
+//POST Comments
 router.post("/:id/comments", (req, res) => {
   const { name, comment } = req.body;
   const newComment = {
     id: uuid(),
     name: name,
     comment: comment,
+    timestamp: new Date(),
   };
-  videos.push(newComment);
-  res.json(newComment);
+
+  fs.readFile("./data/videos.json", (err, data) => {
+    if (err) {
+      return res.status(500).json({
+        error: true,
+        message: "There was an error reading videos from JSON file",
+      });
+    }
+
+    const videos = JSON.parse(data);
+
+    const video = videos.find((video) => video.id === req.params.id);
+    if (!video) {
+      return res.status(404).json({
+        error: true,
+        message: "Video not found",
+      });
+    }
+
+    video.comments.push(newComment);
+
+    fs.writeFile("./data/videos.json", JSON.stringify(videos), (err) => {
+      if (err) {
+        return res.status(500).json({
+          error: true,
+          message:
+            "There was an error saving the comment post, please try again",
+        });
+      }
+
+      res.status(201).json(newComment);
+    });
+  });
+});
+
+//DELETE Comments
+router.delete("/:videoId/comments/:commentId", (req, res) => {
+  const requestVideoId = req.params.videoId;
+  const requestCommentId = req.params.commentId;
+  const requestedVideo = videos.find((video) => video.id === requestVideoId);
+  if (!requestedVideo) {
+    res.status(404).send("The video was not found");
+    return;
+  }
+  const requestedComment = requestedVideo.comments.find(
+    (comment) => comment.id === requestCommentId
+  );
+  if (!requestedComment) {
+    res.status(404).send("The comment was not found");
+    return;
+  }
+  requestedVideo.comments = requestedVideo.comments.filter(
+    (comment) => comment.id !== requestCommentId
+  );
+  res.status(204).send();
+});
+
+//POST Video
+router.post("/", (req, res) => {
+  const { title, channel, image, description, views, likes, duration } =
+    req.body;
+  const newVideo = {
+    id: uuid(),
+    title: title,
+    channel: channel,
+    image: image,
+    description: description,
+    views: views,
+    likes: likes,
+    duration: duration,
+    timestamp: new Date(),
+    comments: [],
+  };
+
+  videos.push(newVideo);
+  fs.writeFile("./data/videos.json", JSON.stringify(videos), (err) => {
+    if (err) {
+      return res.status(500).json({
+        error: true,
+        message: "There was an error savinf the video post, please try again",
+      });
+    }
+
+    res.status(201).json(newVideo);
+  });
 });
