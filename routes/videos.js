@@ -43,13 +43,43 @@ router.get("/:id", (req, res) => {
 
 module.exports = router;
 
+//POST Video
+router.post("/", (req, res) => {
+  const { title, description } = req.body;
+  const newVideo = {
+    id: uuid(),
+    title: title,
+    channel: "Angie",
+    image: "http://localhost:8081/images/upload.jpg",
+    description: description,
+    views: "100",
+    likes: "100",
+    duration: "2",
+    timestamp: new Date(),
+    comments: [],
+  };
+
+  videos.push(newVideo);
+  fs.writeFile("./data/videos.json", JSON.stringify(videos), (err) => {
+    if (err) {
+      return res.status(500).json({
+        error: true,
+        message: "There was an error saving the video post, please try again",
+      });
+    }
+
+    res.status(201).json(newVideo);
+  });
+});
+
 //POST Comments
 router.post("/:id/comments", (req, res) => {
-  const { name, comment } = req.body;
+  const { name, comment, likes } = req.body;
   const newComment = {
     id: uuid(),
     name: name,
     comment: comment,
+    likes: likes,
     timestamp: new Date(),
   };
 
@@ -106,35 +136,5 @@ router.delete("/:videoId/comments/:commentId", (req, res) => {
   requestedVideo.comments = requestedVideo.comments.filter(
     (comment) => comment.id !== requestCommentId
   );
-  res.status(204).send();
-});
-
-//POST Video
-router.post("/", (req, res) => {
-  const { title, channel, image, description, views, likes, duration } =
-    req.body;
-  const newVideo = {
-    id: uuid(),
-    title: title,
-    channel: channel,
-    image: image,
-    description: description,
-    views: views,
-    likes: likes,
-    duration: duration,
-    timestamp: new Date(),
-    comments: [],
-  };
-
-  videos.push(newVideo);
-  fs.writeFile("./data/videos.json", JSON.stringify(videos), (err) => {
-    if (err) {
-      return res.status(500).json({
-        error: true,
-        message: "There was an error savinf the video post, please try again",
-      });
-    }
-
-    res.status(201).json(newVideo);
-  });
+  res.status(200).send();
 });
