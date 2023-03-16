@@ -53,7 +53,7 @@ router.post("/", (req, res) => {
     image: "http://localhost:8081/images/upload.jpg",
     description: description,
     views: "100",
-    likes: "100",
+    likes: "10000",
     duration: "2",
     timestamp: new Date(),
     comments: [],
