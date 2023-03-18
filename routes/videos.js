@@ -41,8 +41,6 @@ router.get("/:id", (req, res) => {
   res.status(200).json(founVideo);
 });
 
-module.exports = router;
-
 //POST Video
 router.post("/", (req, res) => {
   const { title, description } = req.body;
@@ -138,3 +136,5 @@ router.delete("/:videoId/comments/:commentId", (req, res) => {
   );
   res.status(200).send();
 });
+
+module.exports = router;
